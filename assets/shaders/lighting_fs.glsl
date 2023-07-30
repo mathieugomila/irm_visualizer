@@ -126,28 +126,28 @@ vec3 calculate_direct_lighting(const Surface surface, const PointLight light){
 }
 
 vec3 get_sun_illumination(vec3 start_position, vec3 normal){
-    if (dot(normal, -SUN_DIRECTION) < 0.0){
-        return vec3(0.0);
-    }
-    vec3 ray_forward = normalize(-SUN_DIRECTION);
-    vec3 ray_position = start_position + 1.02 * distance_to_border(start_position, ray_forward) * ray_forward;
+    // if (dot(normal, -SUN_DIRECTION) < 0.0){
+    //     return vec3(0.0);
+    // }
+    // vec3 ray_forward = normalize(-SUN_DIRECTION);
+    // vec3 ray_position = start_position + 1.02 * distance_to_border(start_position, ray_forward) * ray_forward;
     
-    while(length(ray_position - start_position) < 6.0 && !is_out_of_map(ray_position)){
-        // If there is a cube : obstruction of light by sun
-        int bloc_id = get_id_cube(ray_position);
-        if (bloc_id > 0){
-            return vec3(0.0);
-        }       
+    // while(length(ray_position - start_position) < 6.0 && !is_out_of_map(ray_position)){
+    //     // If there is a cube : obstruction of light by sun
+    //     int bloc_id = get_id_cube(ray_position);
+    //     if (bloc_id > 0){
+    //         return vec3(0.0);
+    //     }       
 
-        ray_position += distance_to_border(ray_position, ray_forward) * ray_forward;        
-    }
+    //     ray_position += distance_to_border(ray_position, ray_forward) * ray_forward;        
+    // }
 
-    // No bloc has been touched, if the ray is going in the direction of the sun : consider it lighted
-    if (dot(ray_forward, -SUN_DIRECTION) > SUN_SIZE){ 
-        return vec3(1.0);
-    }
+    // // No bloc has been touched, if the ray is going in the direction of the sun : consider it lighted
+    // if (dot(ray_forward, -SUN_DIRECTION) > SUN_SIZE){ 
+    //     return vec3(1.0);
+    // }
 
-    return vec3(0.0);
+    return vec3(1.0);
 }
 
 vec3 get_light_illumination(vec3 start_position, vec3 normal, int ray_index){
@@ -184,7 +184,7 @@ void main()
     // If there is a cube at this position
     if (current_position_texture.a > 0.5){
         vec3 normal = get_normal(point_position);
-        vec3 current_illumination = (0.5 * get_sun_illumination(point_position, normal) + vec3(offset_lighting)) * get_light_illumination(point_position, normal, 0);
+        vec3 current_illumination = (1.0 * get_sun_illumination(point_position, normal) + vec3(offset_lighting)) * get_light_illumination(point_position, normal, 0);
         vec2 text_coord_previous = get_texture_coord_previous_position(point_position, normal);
         // If this pixel was not out of the screen the previous frame: reuse previous image
         if (text_coord_previous.x > 0 && text_coord_previous.y > 0 && text_coord_previous.x < 1.0 && text_coord_previous.y < 1.0){
@@ -206,7 +206,7 @@ void main()
          // New point ==> use X rays to estimate the light
         int number_of_ray = 5;
         vec3 value_acc = current_illumination;
-        vec3 sun_illumination = (0.5 * get_sun_illumination(point_position, normal) + vec3(offset_lighting));
+        vec3 sun_illumination = (1.0 * get_sun_illumination(point_position, normal) + vec3(offset_lighting));
         for(int i = 1; i < number_of_ray; i++){
             value_acc += sun_illumination * get_light_illumination(point_position, normal, i);
         }

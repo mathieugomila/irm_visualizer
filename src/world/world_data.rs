@@ -31,7 +31,7 @@ impl WorldData {
         }
     }
 
-    pub fn _generate_random(&mut self) {
+    pub fn generate_random(&mut self) {
         for x in 0..WORLD_SIZE {
             for y in 0..WORLD_SIZE {
                 for z in 0..WORLD_SIZE {

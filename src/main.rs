@@ -117,10 +117,11 @@ impl Game {
     unsafe fn load_content(&mut self) {
         let aspect_ratio = (self.gl_context.window().inner_size().width as f32)
             / (self.gl_context.window().inner_size().height as f32);
-        self.camera = Player::new(Vector3::new(1.3, 1.3, 1.3), aspect_ratio);
+        self.camera = Player::new(Vector3::new(0.0, 0.0, 0.0), aspect_ratio);
 
-        self.world_data.generate_bottle();
+        //self.world_data.generate_bottle();
         self.world_data.generate_ground();
+        //self.world_data.generate_random();
 
         self.drawer.load_content(&self.gl_context);
     }

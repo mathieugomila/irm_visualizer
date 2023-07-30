@@ -34,6 +34,18 @@ bool is_out_of_map(vec3 position){
     return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE * WORLD_SIZE || position.y > VOXEL_SIZE * WORLD_SIZE || position.z > VOXEL_SIZE * WORLD_SIZE;
 }
 
+float distance_to_grid(vec3 position, float grid_space, float grid_radius){
+    if (is_out_of_map(position)){
+        return 100.0;
+    }
+
+    float grid_y = max(abs(mod(position.x - grid_radius/2.0 - VOXEL_SIZE, grid_space) - grid_space), abs(mod(position.z - VOXEL_SIZE - grid_radius/2.0, grid_space) - grid_space)); 
+    float grid_z = max(abs(mod(position.x - grid_radius/2.0 - VOXEL_SIZE, grid_space) - grid_space), abs(mod(position.y - VOXEL_SIZE - grid_radius/2.0, grid_space) - grid_space)); 
+    float grid_x = max(abs(mod(position.y - grid_radius/2.0 - VOXEL_SIZE, grid_space) - grid_space), abs(mod(position.z - VOXEL_SIZE - grid_radius/2.0, grid_space) - grid_space)); 
+
+    return min(min(grid_x, grid_y), grid_z);
+}
+
 void main()
 {
     bool ray_entered_world = false;
@@ -57,8 +69,14 @@ void main()
             final_color = vec4(ray_position, 1.0);
             return;
         }
-
-        // If there is a cube at this position
+        
+        float grid_space = 0.1;
+        float grid_radius = 0.001;
+        if (distance_to_grid(ray_position, grid_space, grid_radius) < grid_radius){
+            final_color = vec4(ray_position, 1.0);
+            return;
+        }
+       
         ray_position += distance_to_border(ray_position, ray_forward) * ray_forward;
         
       
