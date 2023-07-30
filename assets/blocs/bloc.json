@@ -1,0 +1,62 @@
+[
+    {
+        "name": "Void",
+        "bloc_color": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "is_light": false
+    },
+    {
+        "name": "Metal",
+        "bloc_color": [
+            10,
+            10,
+            10,
+            255
+        ],
+        "is_light": false
+    },
+    {
+        "name": "Dirt",
+        "bloc_color": [
+            30,
+            20,
+            15,
+            255
+        ],
+        "is_light": false
+    },
+    {
+        "name": "Grass",
+        "bloc_color": [
+            10,
+            80,
+            10,
+            255
+        ],
+        "is_light": false
+    },
+    {
+        "name": "Sand",
+        "bloc_color": [
+            251,
+            255,
+            11,
+            255
+        ],
+        "is_light": false
+    },
+    {
+        "name": "Wood",
+        "bloc_color": [
+            155,
+            111,
+            36,
+            255
+        ],
+        "is_light": false
+    }
+]
