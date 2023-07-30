@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use cgmath::Vector3;
 use gl::types::GLuint;
 
@@ -140,13 +138,6 @@ impl WorldData {
         self.regenerate_texture();
     }
 
-    pub fn return_bloc(&self, pos: Vector3<i32>) -> Bloc {
-        if Self::is_outside_world(pos) {
-            return Bloc { id: 0 };
-        }
-        return self.blocs[pos.x as usize][pos.y as usize][pos.z as usize];
-    }
-
     fn change_bloc_without_regen(&mut self, pos: Vector3<i32>, bloc: Bloc) {
         if Self::is_outside_world(pos) {
             return;
@@ -172,13 +163,6 @@ impl WorldData {
             || position.x >= WORLD_SIZE as i32
             || position.y >= WORLD_SIZE as i32
             || position.z >= WORLD_SIZE as i32;
-    }
-
-    pub fn get_bloc(&self, pos: Vector3<i32>) -> Option<Bloc> {
-        if !Self::is_outside_world(pos) {
-            return Option::Some(self.blocs[pos.x as usize][pos.y as usize][pos.z as usize]);
-        }
-        return Option::None;
     }
 }
 
@@ -227,7 +211,6 @@ impl WorldDataTexture {
     }
 
     pub unsafe fn regenerate_texture(&self) {
-        let time_before_regen = Instant::now();
         gl::BindTexture(gl::TEXTURE_3D, self.texture_id);
         gl::TexImage3D(
             gl::TEXTURE_3D,
@@ -241,7 +224,6 @@ impl WorldDataTexture {
             gl::UNSIGNED_BYTE,
             self.buffer.as_ptr() as *const std::ffi::c_void,
         );
-        let delta = Instant::now().duration_since(time_before_regen);
     }
 
     pub fn change_id(&mut self, pos: Vector3<i32>, bloc: Bloc, do_regenerate: bool) {

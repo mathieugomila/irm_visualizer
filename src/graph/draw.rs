@@ -1,6 +1,5 @@
 use std::ffi::CString;
 
-use cgmath::Vector3;
 use glutin::{event::VirtualKeyCode, window::Window, ContextWrapper, PossiblyCurrent};
 
 use crate::{io::input_player::InputManager, player::player::Player, world::world_data::WorldData};
