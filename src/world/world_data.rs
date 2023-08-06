@@ -1,4 +1,4 @@
-use cgmath::{Vector3, Vector4};
+use cgmath::{Vector2, Vector3, Vector4};
 use gl::types::GLuint;
 
 use bracket_noise::prelude::*;
@@ -14,6 +14,7 @@ pub struct Bloc {
 pub struct WorldData {
     blocs: Vec<Vec<Vec<Bloc>>>,
     world_data_texture: WorldDataTexture,
+    pub voxel_size: Vector2<f32>,
 }
 
 pub struct WorldDataTexture {
@@ -22,7 +23,7 @@ pub struct WorldDataTexture {
 }
 
 impl WorldData {
-    pub unsafe fn new() -> Self {
+    pub unsafe fn new(voxel_size: Vector2<f32>) -> Self {
         let blocs = vec![
             vec![
                 vec![
@@ -44,6 +45,7 @@ impl WorldData {
         Self {
             blocs: blocs,
             world_data_texture: WorldDataTexture::new(),
+            voxel_size,
         }
     }
 

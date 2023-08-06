@@ -10,9 +10,10 @@ uniform sampler2D current_position_texture;
 uniform mat4 previous_mvp;
 uniform vec3 camera_position;
 uniform float time;
+uniform float VOXEL_SIZE_XY;
+uniform float VOXEL_SIZE_Z;
 
 const float WORLD_SIZE = 256;
-const float VOXEL_SIZE = 0.01;
 vec3 SUN_DIRECTION = normalize(vec3(-0.2, -0.8, -0.2));
 const float SUN_SIZE = 0.60;
 const int NBR_OF_REBOUNDS = 1; 
@@ -49,8 +50,8 @@ vec3 mod_3d(vec3 position, float value){
 ///////////////////// 
 
 bool is_cube(vec3 position){
-    vec3 position_rectification = vec3(position.x, position.y, position.z * 0.5);
-    vec3 position_in_texture = floor(position_rectification/VOXEL_SIZE)/WORLD_SIZE;
+    vec3 position_rectification = vec3(position.x / VOXEL_SIZE_XY, position.y / VOXEL_SIZE_XY, position.z / VOXEL_SIZE_Z);
+    vec3 position_in_texture = floor(position_rectification)/WORLD_SIZE;
     if (position_in_texture.x < 0 || position_in_texture.y < 0 || position_in_texture.z < 0 || position_in_texture.x > 1 || position_in_texture.y > 1 || position_in_texture.z > 1){
         return false;
     }
@@ -58,20 +59,20 @@ bool is_cube(vec3 position){
 }
 
 float distance_to_border(vec3 position , vec3 direction){
-    float minimum_x = max((1.0001 - fract(position.x/VOXEL_SIZE)) / direction.x, (-0.0001 - fract(position.x/VOXEL_SIZE)) / direction.x);
-    float minimum_y = max((1.0001 - fract(position.y/VOXEL_SIZE)) / direction.y, (-0.0001 - fract(position.y/VOXEL_SIZE)) / direction.y);
-    float minimum_z = max((1.0001 - fract(position.z/(2.0*VOXEL_SIZE))) / direction.z, (-0.0001 - fract(position.z/(2.0*VOXEL_SIZE))) / direction.z);
+    float minimum_x = max((1.0001 - fract(position.x/VOXEL_SIZE_XY)) / direction.x, (-0.0001 - fract(position.x/VOXEL_SIZE_XY)) / direction.x);
+    float minimum_y = max((1.0001 - fract(position.y/VOXEL_SIZE_XY)) / direction.y, (-0.0001 - fract(position.y/VOXEL_SIZE_XY)) / direction.y);
+    float minimum_z = max((1.0001 - fract(position.z/VOXEL_SIZE_Z)) / direction.z, (-0.0001 - fract(position.z/VOXEL_SIZE_Z)) / direction.z);
 
-    return max(0.01 * VOXEL_SIZE, VOXEL_SIZE * min(minimum_x, min(minimum_y, minimum_z)));
+    return min(VOXEL_SIZE_XY * minimum_x, min(VOXEL_SIZE_XY * minimum_y, VOXEL_SIZE_Z * minimum_z));
 }
 
 bool is_out_of_map(vec3 position){
-    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE * WORLD_SIZE || position.y > VOXEL_SIZE * WORLD_SIZE || position.z > 2.0 * VOXEL_SIZE * WORLD_SIZE;
+    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE_XY * WORLD_SIZE || position.y > VOXEL_SIZE_XY * WORLD_SIZE || position.z > VOXEL_SIZE_Z * WORLD_SIZE;
 }
 
 vec3 get_normal(vec3 position){
-    vec3 position_rectification = vec3(position.x, position.y, position.z * 0.5);
-    vec3 center = VOXEL_SIZE * (floor(position_rectification / VOXEL_SIZE) + vec3(0.5, 0.5, 0.5));
+    vec3 position_rectification = vec3(position.x, position.y, position.z * (VOXEL_SIZE_XY/VOXEL_SIZE_Z));
+    vec3 center = (floor(position_rectification/VOXEL_SIZE_XY) + vec3(0.5, 0.5, 0.5)) * VOXEL_SIZE_XY;
     if(abs(center.x - position_rectification.x) > abs(center.y - position_rectification.y) && abs(center.x - position_rectification.x) > abs(center.z - position_rectification.z)){
         if(center.x - position_rectification.x > 0.0){
             return vec3(-1.0, 0.0, 0.0);
@@ -137,7 +138,7 @@ void main()
             vec3 previous_position = previous_position_texture.rgb;
             float length_position_delta = length(previous_position - point_position);
             // If the two point are the same
-            if (length_position_delta < 0.2 * VOXEL_SIZE) {
+            if (length_position_delta < 0.2 * VOXEL_SIZE_XY) {
                 vec4 previous_illumination_texture = texture(previous_lighting_texture, text_coord_previous);
                 vec3 previous_illumination = previous_illumination_texture.rgb; 
                 vec3 value_after_coef = (previous_illumination * previous_illumination_texture.a + current_illumination) / (previous_illumination_texture.a + 1.0);

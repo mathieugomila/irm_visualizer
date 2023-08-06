@@ -6,15 +6,15 @@ uniform sampler3D world_data_texture;
 
 uniform mat4 invert_mvp;
 uniform vec3 camera_position;
+uniform float VOXEL_SIZE_XY;
+uniform float VOXEL_SIZE_Z;
 
 const float WORLD_SIZE = 256;
-const float VOXEL_SIZE_XY = 0.01;
-const float VOXEL_SIZE_Z = 0.02;
 
 
 bool is_cube(vec3 position){
-    vec3 position_rectification = vec3(position.x, position.y, position.z * 0.5);
-    vec3 position_in_texture = floor(position_rectification/VOXEL_SIZE_XY)/WORLD_SIZE;
+    vec3 position_rectification = vec3(position.x / VOXEL_SIZE_XY, position.y / VOXEL_SIZE_XY, position.z / VOXEL_SIZE_Z);
+    vec3 position_in_texture = floor(position_rectification)/WORLD_SIZE;
     if (position_in_texture.x < 0 || position_in_texture.y < 0 || position_in_texture.z < 0 || position_in_texture.x > 1 || position_in_texture.y > 1 || position_in_texture.z > 1){
         return false;
     }
@@ -27,13 +27,13 @@ bool is_cube(vec3 position){
 float distance_to_border(vec3 position , vec3 direction){
     float minimum_x = max((1.0001 - fract(position.x/VOXEL_SIZE_XY)) / direction.x, (-0.0001 - fract(position.x/VOXEL_SIZE_XY)) / direction.x);
     float minimum_y = max((1.0001 - fract(position.y/VOXEL_SIZE_XY)) / direction.y, (-0.0001 - fract(position.y/VOXEL_SIZE_XY)) / direction.y);
-    float minimum_z = max((1.0001 - fract(position.z/(2.0*VOXEL_SIZE_XY))) / direction.z, (-0.0001 - fract(position.z/(2.0*VOXEL_SIZE_XY))) / direction.z);
+    float minimum_z = max((1.0001 - fract(position.z/VOXEL_SIZE_Z)) / direction.z, (-0.0001 - fract(position.z/VOXEL_SIZE_Z)) / direction.z);
 
-    return VOXEL_SIZE_XY * min(minimum_x, min(minimum_y, minimum_z));
+    return min(VOXEL_SIZE_XY * minimum_x, min(VOXEL_SIZE_XY * minimum_y, VOXEL_SIZE_Z * minimum_z));
 }
 
 bool is_out_of_map(vec3 position){
-    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE_XY * WORLD_SIZE || position.y > VOXEL_SIZE_XY * WORLD_SIZE || position.z > 2.0 * VOXEL_SIZE_XY * WORLD_SIZE;
+    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE_XY * WORLD_SIZE || position.y > VOXEL_SIZE_XY * WORLD_SIZE || position.z > VOXEL_SIZE_Z * WORLD_SIZE;
 }
 
 // float distance_to_grid(vec3 position, float grid_space, float grid_radius){

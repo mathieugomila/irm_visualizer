@@ -6,28 +6,30 @@ uniform sampler3D world_data_texture;
 uniform sampler2D current_lighting_texture;
 uniform sampler2D current_position_texture;
 uniform float time;
+uniform float VOXEL_SIZE_XY;
+uniform float VOXEL_SIZE_Z;
 
 
 const float WORLD_SIZE = 256;
-const float VOXEL_SIZE = 0.01;
 const vec2 window_size = vec2(1024.0, 768.0);
 const vec2 delta = vec2(1.0 / window_size.x, 1.0 / window_size.y);
 const float LIGHT_DIMINUTION = 15.0;
 
 
 vec4 get_texture_color(vec3 ray_position){
-    vec3 position_rectification = vec3(ray_position.x, ray_position.y, ray_position.z * 0.5);
-    vec3 position_in_texture = floor(position_rectification/VOXEL_SIZE)/WORLD_SIZE;
+    vec3 position_rectification = vec3(ray_position.x, ray_position.y, ray_position.z * (VOXEL_SIZE_XY/VOXEL_SIZE_Z));
+    vec3 position_in_texture = floor(position_rectification/VOXEL_SIZE_XY)/WORLD_SIZE;
     return texture(world_data_texture, position_in_texture);
 }
 
 
 bool is_out_of_map(vec3 position){
-    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE * WORLD_SIZE || position.y > VOXEL_SIZE * WORLD_SIZE || position.z > VOXEL_SIZE * WORLD_SIZE;
+    return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE_XY * WORLD_SIZE || position.y > VOXEL_SIZE_XY * WORLD_SIZE || position.z > VOXEL_SIZE_Z * WORLD_SIZE;
 }
 
 vec3 get_normal(vec3 position){
-    vec3 center = VOXEL_SIZE * (floor(position / VOXEL_SIZE) + vec3(0.5, 0.5, 0.5));
+    vec3 position_rectification = vec3(position.x, position.y, position.z * (VOXEL_SIZE_XY/VOXEL_SIZE_Z));
+    vec3 center = (floor(position_rectification/VOXEL_SIZE_XY) + vec3(0.5, 0.5, 0.5)) * VOXEL_SIZE_XY;
     if(abs(center.x - position.x) > abs(center.y - position.y) && abs(center.x - position.x) > abs(center.z - position.z)){
         if(center.x - position.x > 0.0){
             return vec3(-1.0, 0.0, 0.0);

@@ -1,5 +1,6 @@
 use std::ffi::CString;
 
+use cgmath::Vector2;
 use glutin::{event::VirtualKeyCode, window::Window, ContextWrapper, PossiblyCurrent};
 
 use crate::{io::input_player::InputManager, player::player::Player, world::world_data::WorldData};
@@ -78,6 +79,7 @@ impl Drawer {
         player: &Player,
         time_since_beginning: f32,
         world_data: &WorldData,
+        bloc_size: Vector2<f32>,
     ) {
         // Copy old texture to new texture
         Texture2D::copy(
@@ -115,19 +117,24 @@ impl Drawer {
         );
 
         // First pass : draw image in a fbo
-        self.setup_uniforms_draw_pass_1(player, world_data);
+        self.setup_uniforms_draw_pass_1(player, world_data, bloc_size);
         self.draw_pass_1(gl_context);
 
         // Second pass: use position draw (draw pass 1) to calculate lighting
-        self.setup_uniforms_draw_pass_2(player, time_since_beginning);
+        self.setup_uniforms_draw_pass_2(player, time_since_beginning, bloc_size);
         self.draw_pass_2(gl_context);
 
         // Third pass: use everything drawn before and render final image
-        self.setup_uniforms_draw_pass_3(time_since_beginning, world_data);
+        self.setup_uniforms_draw_pass_3(time_since_beginning, world_data, bloc_size);
         self.draw_pass_3(gl_context);
     }
 
-    pub unsafe fn setup_uniforms_draw_pass_1(&self, player: &Player, world_data: &WorldData) {
+    pub unsafe fn setup_uniforms_draw_pass_1(
+        &self,
+        player: &Player,
+        world_data: &WorldData,
+        bloc_size: Vector2<f32>,
+    ) {
         // Send orientation inversed matrix to shader
         self.raymarching_quad.as_ref().unwrap().send_uniform_mat4(
             "invert_mvp",
@@ -148,6 +155,15 @@ impl Drawer {
             .unwrap()
             .send_uniform_vec3("camera_position", player.get_eye_position().into());
 
+        self.raymarching_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_XY", bloc_size.x);
+        self.raymarching_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_Z", bloc_size.y);
+
         // Send 3D world data uniform
         let world_data_texture_name = CString::new("world_data_texture").unwrap();
         let world_data_texture_location = gl::GetUniformLocation(
@@ -164,7 +180,12 @@ impl Drawer {
         gl::ActiveTexture(gl::TEXTURE0);
     }
 
-    pub unsafe fn setup_uniforms_draw_pass_2(&self, player: &Player, time_since_beginning: f32) {
+    pub unsafe fn setup_uniforms_draw_pass_2(
+        &self,
+        player: &Player,
+        time_since_beginning: f32,
+        bloc_size: Vector2<f32>,
+    ) {
         // Send previous mvp matrix to shader
         self.lighting_quad.as_ref().unwrap().send_uniform_mat4(
             "previous_mvp",
@@ -184,6 +205,15 @@ impl Drawer {
             .as_ref()
             .unwrap()
             .send_uniform_f32("time", time_since_beginning);
+
+        self.lighting_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_XY", bloc_size.x);
+        self.lighting_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_Z", bloc_size.y);
 
         // Sending camera position to shader
         self.lighting_quad.as_ref().unwrap().send_uniform_vec3(
@@ -254,12 +284,22 @@ impl Drawer {
         &self,
         time_since_beginning: f32,
         world_data: &WorldData,
+        bloc_size: Vector2<f32>,
     ) {
         // Sending time to shader
         self.filter_quad
             .as_ref()
             .unwrap()
             .send_uniform_f32("time", time_since_beginning);
+
+        self.filter_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_XY", bloc_size.x);
+        self.filter_quad
+            .as_ref()
+            .unwrap()
+            .send_uniform_f32("VOXEL_SIZE_Z", bloc_size.y);
 
         let world_data_texture_name = CString::new("world_data_texture").unwrap();
         let world_data_texture_location = gl::GetUniformLocation(

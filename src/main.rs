@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use cgmath::Vector3;
+use cgmath::{Vector2, Vector3};
 use glutin::{
     dpi::PhysicalSize,
     event::{DeviceEvent, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
@@ -112,7 +112,7 @@ impl Game {
             time_last_draw: Instant::now(),
             time_since_beginning: 0.0,
             camera: Player::new(Vector3::new(0.0, 0.0, 0.0), 1.0),
-            world_data: WorldData::new(),
+            world_data: WorldData::new(Vector2::new(0.01, 0.005)),
             drawer: Drawer::new(),
         }
     }
@@ -165,6 +165,7 @@ impl Game {
             &self.camera,
             self.time_since_beginning,
             &self.world_data,
+            self.world_data.voxel_size,
         );
 
         self.gl_context.swap_buffers().unwrap();
