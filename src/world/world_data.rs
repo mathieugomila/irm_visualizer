@@ -57,7 +57,7 @@ impl WorldData {
                         * 48965.0)
                         .fract();
 
-                    if random < -0.950 {
+                    if random < -0.970 {
                         self.change_bloc_without_regen(
                             Vector3 {
                                 x: x as i32,
@@ -66,26 +66,9 @@ impl WorldData {
                             },
                             Bloc {
                                 color: Vector4 {
-                                    x: 255,
-                                    y: 0,
-                                    z: 0,
-                                    w: 255,
-                                },
-                            },
-                        );
-                    }
-                    if y == 98 {
-                        self.change_bloc_without_regen(
-                            Vector3 {
-                                x: x as i32,
-                                y: y as i32,
-                                z: z as i32,
-                            },
-                            Bloc {
-                                color: Vector4 {
-                                    x: 0,
-                                    y: 255,
-                                    z: 0,
+                                    x: x as u8,
+                                    y: y as u8,
+                                    z: z as u8,
                                     w: 255,
                                 },
                             },
@@ -124,6 +107,41 @@ impl WorldData {
                             );
                         }
                     }
+                }
+            }
+        }
+        self.regenerate_texture();
+    }
+
+    #[allow(unused)]
+    pub fn load_world_from_file(&mut self, save_name: &str) {
+        let flatten = std::fs::read(format!("saves/{}.bin", save_name)).unwrap();
+        self.voxel_size = Vector2::new(flatten[0] as f32 * 0.001, flatten[2] as f32 * 0.001);
+        let world_size = Vector3::new(
+            flatten[3] as usize,
+            flatten[4] as usize,
+            flatten[5] as usize,
+        );
+        let mut i = 0;
+        for x in 0..world_size.x {
+            for y in 0..world_size.y {
+                for z in 0..world_size.z {
+                    self.change_bloc_without_regen(
+                        Vector3 {
+                            x: x as i32,
+                            y: y as i32,
+                            z: z as i32,
+                        },
+                        Bloc {
+                            color: Vector4::new(
+                                flatten[4 * i + 0 + 6],
+                                flatten[4 * i + 1 + 6],
+                                flatten[4 * i + 2 + 6],
+                                flatten[4 * i + 3 + 6],
+                            ),
+                        },
+                    );
+                    i += 1;
                 }
             }
         }

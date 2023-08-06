@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{env, process::exit, time::Instant};
 
 use cgmath::{Vector2, Vector3};
 use glutin::{
@@ -19,9 +19,17 @@ mod player;
 mod world;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        println!("Programm need one argument: path to bin file");
+        exit(-1);
+    }
+
+    let file_name_to_plot = &args[1];
+
     unsafe {
         let event_loop = EventLoop::new();
-        let mut game = Game::new(&event_loop);
+        let mut game = Game::new(&event_loop, file_name_to_plot);
         game.load_content();
         // Infinite loop of the code
         event_loop.run(move |event, _, control_flow| {
@@ -81,13 +89,14 @@ struct Game {
     camera: Player,
     world_data: WorldData,
     drawer: Drawer,
+    file_name: String,
 }
 
 impl Game {
-    unsafe fn new(event_loop: &EventLoop<()>) -> Self {
+    unsafe fn new(event_loop: &EventLoop<()>, file_name: &String) -> Self {
         let input_manager: InputManager = InputManager::new();
         let window = WindowBuilder::new()
-            .with_title("Best jeu ever")
+            .with_title("IRM Visualizer")
             .with_inner_size(PhysicalSize::new(1024, 768));
 
         let gl_context = ContextBuilder::new()
@@ -111,19 +120,21 @@ impl Game {
             time_last_update: Instant::now(),
             time_last_draw: Instant::now(),
             time_since_beginning: 0.0,
-            camera: Player::new(Vector3::new(0.0, 0.0, 0.0), 1.0),
+            camera: Player::new(Vector3::new(-0.0, 0.0, 0.0), 1.0),
             world_data: WorldData::new(Vector2::new(0.01, 0.005)),
             drawer: Drawer::new(),
+            file_name: file_name.to_string(),
         }
     }
 
     unsafe fn load_content(&mut self) {
         let aspect_ratio = (self.gl_context.window().inner_size().width as f32)
             / (self.gl_context.window().inner_size().height as f32);
-        self.camera = Player::new(Vector3::new(0.0, 0.0, 0.0), aspect_ratio);
+        self.camera = Player::new(Vector3::new(-0.01, 0.0, -0.01), aspect_ratio);
 
         //self.world_data.generate_bottle();
-        self.world_data.generate_ground();
+        self.world_data
+            .load_world_from_file(self.file_name.as_str());
         //self.world_data.generate_random();
 
         self.drawer.load_content(&self.gl_context);
