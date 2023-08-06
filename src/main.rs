@@ -91,6 +91,9 @@ impl Game {
             .with_inner_size(PhysicalSize::new(1024, 768));
 
         let gl_context = ContextBuilder::new()
+            .with_depth_buffer(24)
+            .with_vsync(true)
+            .with_multisampling(4)
             .with_gl(GlRequest::Specific(Api::OpenGl, (4, 0)))
             .build_windowed(window, &event_loop)
             .expect("Cannot create windowed context");

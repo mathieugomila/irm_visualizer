@@ -185,6 +185,16 @@ impl Drawer {
             .unwrap()
             .send_uniform_f32("time", time_since_beginning);
 
+        // Sending camera position to shader
+        self.lighting_quad.as_ref().unwrap().send_uniform_vec3(
+            "camera_position",
+            [
+                player.get_eye_position().x,
+                player.get_eye_position().y,
+                player.get_eye_position().z,
+            ],
+        );
+
         // Sending previous lighting texture to shader
         let previous_lighting_texture_name = CString::new("previous_lighting_texture").unwrap();
         let previous_lighting_texture_location = gl::GetUniformLocation(

@@ -15,14 +15,12 @@ const vec2 delta = vec2(1.0 / window_size.x, 1.0 / window_size.y);
 const float LIGHT_DIMINUTION = 15.0;
 
 
-vec4 get_texture(vec3 ray_position){
-    vec3 position_in_texture = floor(ray_position/VOXEL_SIZE)/WORLD_SIZE;
+vec4 get_texture_color(vec3 ray_position){
+    vec3 position_rectification = vec3(ray_position.x, ray_position.y, ray_position.z * 0.5);
+    vec3 position_in_texture = floor(position_rectification/VOXEL_SIZE)/WORLD_SIZE;
     return texture(world_data_texture, position_in_texture);
 }
 
-int get_id_cube(vec3 ray_position){
-    return int(255.0 * get_texture(ray_position).r);
-}
 
 bool is_out_of_map(vec3 position){
     return position.x < 0.0 || position.y < 0.0 || position.z < 0.0 || position.x > VOXEL_SIZE * WORLD_SIZE || position.y > VOXEL_SIZE * WORLD_SIZE || position.z > VOXEL_SIZE * WORLD_SIZE;
@@ -108,11 +106,7 @@ float smooth_float(float value){
 
 void main()
 {
-    // Add a cursor
-    if (length(position_pass / delta) < 10.0){
-        final_color = vec4(1.0, 0.0, 0.0, 1.0);
-        return;
-    }
+    final_color = vec4(1.0, 1.0, 1.0, 1.0);
 
     vec2 uv = 0.5 * (position_pass + vec2(1.0));
 
@@ -121,29 +115,10 @@ void main()
         vec3 filtered_light = texture(current_lighting_texture, uv).rgb;
         float pow_factor = 0.6;
         filtered_light = vec3(smooth_float(filtered_light.x), smooth_float(filtered_light.y), smooth_float(filtered_light.z));
-        int bloc_id = get_id_cube(current_position_texture_value.xyz);
 
-        if (bloc_id == 1){
-            vec3 color = vec3(0.6, 0.4, 0.15);
-            final_color = vec4(filtered_light * color, 1.0);
-        }
-
-        else if (bloc_id == 2){
-            vec3 color = vec3(0.0, 1.0, 0.0);
-            final_color = vec4(filtered_light * color, 1.0);
-        }
-
-        else if (bloc_id == 3){
-            vec3 color = vec3(1.0, 1.0, 1.0);
-            final_color = vec4(filtered_light * color, 1.0);
-        }
-
-        else if (bloc_id == 4){
-            vec3 color = vec3(1.0, 1.0, 0.0);
-            final_color = vec4(filtered_light * color, 1.0);
-        }
-
-        return;
+        
+        vec4 texture_color = get_texture_color(current_position_texture_value.xyz);
+        final_color = vec4(filtered_light * texture_color.xyz, texture_color.a);
     }
 }
 

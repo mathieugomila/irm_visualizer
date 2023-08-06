@@ -1,4 +1,4 @@
-use cgmath::Vector3;
+use cgmath::{Vector3, Vector4};
 use gl::types::GLuint;
 
 use bracket_noise::prelude::*;
@@ -8,7 +8,7 @@ pub const WORLD_SIZE: usize = 256;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Bloc {
-    pub id: u8,
+    pub color: Vector4<u8>,
 }
 
 pub struct WorldData {
@@ -23,7 +23,23 @@ pub struct WorldDataTexture {
 
 impl WorldData {
     pub unsafe fn new() -> Self {
-        let blocs = vec![vec![vec![Bloc { id: 0 }; WORLD_SIZE]; WORLD_SIZE]; WORLD_SIZE];
+        let blocs = vec![
+            vec![
+                vec![
+                    Bloc {
+                        color: Vector4 {
+                            x: 0,
+                            y: 0,
+                            z: 0,
+                            w: 0
+                        }
+                    };
+                    WORLD_SIZE
+                ];
+                WORLD_SIZE
+            ];
+            WORLD_SIZE
+        ];
 
         Self {
             blocs: blocs,
@@ -46,7 +62,14 @@ impl WorldData {
                                 y: y as i32,
                                 z: z as i32,
                             },
-                            Bloc { id: 1 },
+                            Bloc {
+                                color: Vector4 {
+                                    x: 255,
+                                    y: 0,
+                                    z: 0,
+                                    w: 255,
+                                },
+                            },
                         );
                     }
                     if y == 98 {
@@ -56,7 +79,14 @@ impl WorldData {
                                 y: y as i32,
                                 z: z as i32,
                             },
-                            Bloc { id: 1 },
+                            Bloc {
+                                color: Vector4 {
+                                    x: 0,
+                                    y: 255,
+                                    z: 0,
+                                    w: 255,
+                                },
+                            },
                         );
                     }
                 }
@@ -81,7 +111,14 @@ impl WorldData {
                                     y: y as i32,
                                     z: z as i32,
                                 },
-                                Bloc { id: 1 },
+                                Bloc {
+                                    color: Vector4 {
+                                        x: 0,
+                                        y: 0,
+                                        z: 255,
+                                        w: 255,
+                                    },
+                                },
                             );
                         }
                     }
@@ -128,7 +165,14 @@ impl WorldData {
                                 y: y as i32,
                                 z: z as i32,
                             },
-                            Bloc { id: 1 },
+                            Bloc {
+                                color: Vector4 {
+                                    x: x as u8,
+                                    y: y as u8,
+                                    z: z as u8,
+                                    w: 255,
+                                },
+                            },
                         );
                     }
                 }
@@ -230,7 +274,23 @@ impl WorldDataTexture {
         self.buffer[4
             * (pos.x as usize
                 + WORLD_SIZE * pos.y as usize
-                + WORLD_SIZE * WORLD_SIZE * pos.z as usize)] = bloc.id;
+                + WORLD_SIZE * WORLD_SIZE * pos.z as usize)
+            + 0] = bloc.color.x;
+        self.buffer[4
+            * (pos.x as usize
+                + WORLD_SIZE * pos.y as usize
+                + WORLD_SIZE * WORLD_SIZE * pos.z as usize)
+            + 1] = bloc.color.y;
+        self.buffer[4
+            * (pos.x as usize
+                + WORLD_SIZE * pos.y as usize
+                + WORLD_SIZE * WORLD_SIZE * pos.z as usize)
+            + 2] = bloc.color.z;
+        self.buffer[4
+            * (pos.x as usize
+                + WORLD_SIZE * pos.y as usize
+                + WORLD_SIZE * WORLD_SIZE * pos.z as usize)
+            + 3] = bloc.color.w;
         if do_regenerate {
             unsafe {
                 self.regenerate_texture();
