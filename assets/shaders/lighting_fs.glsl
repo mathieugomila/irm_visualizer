@@ -143,14 +143,14 @@ void main()
                 vec3 previous_illumination = previous_illumination_texture.rgb; 
                 vec3 value_after_coef = (previous_illumination * previous_illumination_texture.a + current_illumination) / (previous_illumination_texture.a + 1.0);
                 final_color = vec4(value_after_coef, previous_illumination_texture.a + 1.0);
-                if (previous_illumination_texture.a > 100.0){
-                    final_color.a = 100.0;
+                if (previous_illumination_texture.a > 500.0){
+                    final_color.a = 500.0;
                 }
                 return;
             }
         }
          // New point ==> use X rays to estimate the light
-        int number_of_ray = 5;
+        int number_of_ray = 20;
         vec3 value_acc = current_illumination;
         vec3 sun_illumination = vec3(1.0 + offset_lighting);
         for(int i = 1; i < number_of_ray; i++){
