@@ -4,7 +4,7 @@ use gl::types::GLuint;
 use bracket_noise::prelude::*;
 use rand::Rng;
 
-pub const WORLD_SIZE: usize = 256;
+pub const WORLD_SIZE: usize = 512;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Bloc {

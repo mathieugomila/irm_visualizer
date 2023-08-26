@@ -19,8 +19,11 @@ class RustVisualizer:
 
         os.makedirs("saves", exist_ok=True)
 
+        print(pixel_size)
+
         # Ouvrir le fichier en mode binaire pour l'écriture
         with open(f"{path_to_rust_prog}/saves/save_{file_name}.bin", "wb") as file:
+            print(pixel_size)
             data = struct.pack(
                 'BBB', pixel_size[0], pixel_size[1], pixel_size[2])
             file.write(data)
@@ -48,31 +51,48 @@ class RustVisualizer:
 
 
 if __name__ == "__main__":
+    import pydicom
+    import numpy as np
+
+    # Charger le fichier DICOM
+    dicom_file = pydicom.dcmread("temp.dcm")
+
+    # Récupérer les données
+    image_data = dicom_file.pixel_array
+
+    # Créer un tableau 3D (hauteur, largeur, 4)
+    shape = (image_data.shape[0], image_data.shape[1], 1, 4)
+    image_3D = np.zeros(shape, dtype=np.uint8)
+
+    # Remplir le tableau 3D
+    image_3D[..., 0, :3] = image_data[..., None]
+    image_3D[..., 0, 3] = 255
+
+    print(image_3D.shape)
+
     # Nbr de pixel, les deux premiers nombres sont pour une coupe donnée, le 3eme est le nombre de couper
-    nbr_of_pixels = (80, 80, 10)
+    nbr_of_pixels = (image_data.shape[0], image_data.shape[1], 1)
+
+    # Espacement entre les pixels (x, y) en mm
+    pixel_spacing_x, pixel_spacing_y = map(float, dicom_file.PixelSpacing)
+    pixel_spacing_x = int(round(10.0 * pixel_spacing_x))
+    pixel_spacing_y = int(round(10.0 * pixel_spacing_y))
+
+    # Épaisseur de la slice en mm
+    slice_thickness = int(round(dicom_file.SliceThickness * 10.0))
 
     # Taille des pixels en dixieme de mm (Pour l'instant on peut seulement avoir x=y): ici on a des pixel de 1mm de coté et 2mm entre deux slices
-    pixel_size = (10, 10, 60)
+    pixel_size = (pixel_spacing_x, pixel_spacing_y, slice_thickness)
 
     # Path vers le dossier que je t'envois (en gros dossier qui contient le fichier "Cargo.toml")
     path = "."
 
     # Exemple pour créer un tableau 3d.
     rust_visualizer_object = RustVisualizer(nbr_of_pixels)
-    # On parcourt le tableau 3d
-    for x in range(nbr_of_pixels[0]):
-        for y in range(nbr_of_pixels[1]):
-            for z in range(nbr_of_pixels[2]):
-                # Un pixel sur deux (c'est juste un exemple)
-                if (x+y+z) % 2 == 0:
-                    # Chaque élément de my_array[x, y, z] est un array de 4 élément :
-                    #   - Le premier élément doit etre une valeur entre 0 et 255 inclus qui correspond à la couleur rouge
-                    #   - Le deuxieme élément doit etre une valeur entre 0 et 255 inclus qui correspond à la couleur vert
-                    #   - Le troisieme élément doit etre une valeur entre 0 et 255 inclus qui correspond à la couleur bleu
-                    #   - Le dernier élément vaut 255 si on veut un cube, 0 sinon
-                    #
-                    # Si aucune valeur sont spécifié pour my_array[x, y, z] le cube est vide
-                    rust_visualizer_object.array[x, y, z] = [int((float(x)/float(nbr_of_pixels[0])) * 255), int(
-                        (float(y)/float(nbr_of_pixels[1])) * 255), int((float(z)/float(nbr_of_pixels[2])) * 255), 255]
+    rust_visualizer_object.array = image_3D
 
     rust_visualizer_object.start_visualizer(pixel_size, path)
+
+
+
+
