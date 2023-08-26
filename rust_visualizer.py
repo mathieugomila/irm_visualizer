@@ -41,7 +41,7 @@ class RustVisualizer:
 
     def start_visualizer(self, pixel_size, path_to_rust_prog):
         filename = self.export_to_bin(pixel_size, path_to_rust_prog)
-        command_to_execute = f"cd {path_to_rust_prog} && cargo run -- {filename}"
+        command_to_execute = f"cd {path_to_rust_prog} && cargo run --release -- {filename}"
         print("command:", command_to_execute)
         subprocess.run(command_to_execute, shell=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
